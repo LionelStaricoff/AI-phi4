@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /models \
     && wget --header="Authorization: Bearer ${HF_TOKEN}" \
     -O /models/$MODEL \
-    https://huggingface.co/bartowski/TheDrummer_Gemma-3-R1-27B-v1-GGUF/tree/main/TheDrummer_Gemma-3-R1-27B-v1-bf16
+    https://huggingface.co/bartowski/TheDrummer_Gemma-3-R1-27B-v1-GGUF/tree/main/bartowski/TheDrummer_Gemma-3-R1-27B-v1-GGUF
 
 EXPOSE 8000
 
