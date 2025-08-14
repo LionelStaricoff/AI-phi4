@@ -1,10 +1,8 @@
 FROM ubuntu:22.04
 
-# Variables de entorno (pueden cambiarse en build)
-ARG HF_TOKEN
-ENV HF_TOKEN=${HF_TOKEN}
-ENV MODEL=tu_modelo.gguf
-ENV HF_MODEL_URL=https://huggingface.co/usuario/repositorio/resolve/main/tu_modelo.gguf
+# Variables de entorno
+ENV MODEL=tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+ENV HF_MODEL_URL=https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
 
 # Instalar dependencias
 RUN apt-get update && apt-get install -y \
@@ -25,10 +23,9 @@ RUN git clone https://github.com/ggerganov/llama.cpp . \
     && cmake -B build \
     && cmake --build build --config Release
 
-# Descargar el modelo con token
+# Descargar el modelo público
 RUN mkdir -p /models && \
-    wget --header="Authorization: Bearer ${HF_TOKEN}" \
-    -O /models/${MODEL} ${HF_MODEL_URL}
+    wget -O /models/${MODEL} ${HF_MODEL_URL}
 
 # Copiar dependencias Python
 COPY requirements.txt /app/requirements.txt
