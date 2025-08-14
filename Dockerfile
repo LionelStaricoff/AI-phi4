@@ -1,9 +1,9 @@
+# Imagen base
 FROM ubuntu:22.04
 
-# Variables
+# Variables de entorno
 ENV MODEL=SmolLM2-135M-Q4_0.gguf
-ENV MODEL_URL=https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Q4_0.gguf
-ENV PORT=8080
+ENV HF_MODEL_URL=https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Q4_0.gguf
 
 # Instalar dependencias
 RUN apt-get update && apt-get install -y \
@@ -13,27 +13,32 @@ RUN apt-get update && apt-get install -y \
     wget \
     python3 \
     python3-pip \
+    libcurl4-openssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Descargar y compilar llama.cpp
+# Crear carpeta de trabajo
 WORKDIR /app
+
+# Clonar y compilar llama.cpp
 RUN git clone https://github.com/ggerganov/llama.cpp . \
     && cmake -B build \
     && cmake --build build --config Release
 
-# Descargar modelo
+# Descargar el modelo
 RUN mkdir -p /models && \
-    wget -O /models/${MODEL} ${MODEL_URL}
+    wget -O /models/${MODEL} ${HF_MODEL_URL}
 
-# Instalar servidor Python para API
+# Copiar requisitos de Python
 COPY requirements.txt /app/requirements.txt
+
+# Instalar dependencias de Python
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copiar script de servidor
+# Copiar script del servidor
 COPY server.py /app/server.py
 
-# Exponer puerto
-EXPOSE ${PORT}
+# Exponer puerto para la API
+EXPOSE 8000
 
-# Ejecutar API
-CMD ["python3", "server.py", "--model", "/models/SmolLM2-135M-Q4_0.gguf", "--port", "8080"]
+# Comando para ejecutar el servidor
+CMD ["python3", "server.py"]
