@@ -1,9 +1,10 @@
-# Imagen base
 FROM ubuntu:22.04
 
-# Variables de entorno
-ENV MODEL=SmolLM2-135M-Q4_0.gguf
-ENV HF_MODEL_URL=https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Q4_0.gguf
+# Variables de entorno (pueden cambiarse en build)
+ARG HF_TOKEN
+ENV HF_TOKEN=${HF_TOKEN}
+ENV MODEL=tu_modelo.gguf
+ENV HF_MODEL_URL=https://huggingface.co/usuario/repositorio/resolve/main/tu_modelo.gguf
 
 # Instalar dependencias
 RUN apt-get update && apt-get install -y \
@@ -16,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear carpeta de trabajo
+# Directorio de trabajo
 WORKDIR /app
 
 # Clonar y compilar llama.cpp
@@ -24,21 +25,20 @@ RUN git clone https://github.com/ggerganov/llama.cpp . \
     && cmake -B build \
     && cmake --build build --config Release
 
-# Descargar el modelo
+# Descargar el modelo con token
 RUN mkdir -p /models && \
-    wget -O /models/${MODEL} ${HF_MODEL_URL}
+    wget --header="Authorization: Bearer ${HF_TOKEN}" \
+    -O /models/${MODEL} ${HF_MODEL_URL}
 
-# Copiar requisitos de Python
+# Copiar dependencias Python
 COPY requirements.txt /app/requirements.txt
-
-# Instalar dependencias de Python
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copiar script del servidor
+# Copiar el servidor Python
 COPY server.py /app/server.py
 
-# Exponer puerto para la API
+# Exponer puerto
 EXPOSE 8000
 
-# Comando para ejecutar el servidor
+# Comando de inicio
 CMD ["python3", "server.py"]
